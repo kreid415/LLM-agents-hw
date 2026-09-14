@@ -32,13 +32,15 @@ from typing import Any, Iterable
 
 # Base text whose token IDs are repeated to construct each prefill input length.
 PREFILL_PROMPT = (
-    "Explain the important ideas in this passage and retain all relevant "
-    "details. The passage discusses efficient inference for language models, "
-    "including attention, memory bandwidth, batching, and sparse experts. "
+   "In a hole in the ground there lived a hobbit."
+   "Not a nasty, dirty, wet hole, filled with the ends of worms and an oozy smell,"
+   "nor yet a dry, bare, sandy hole with nothing in it to sit down on or eat: "
+   "it was a hobbit-hole, and that means comfort."
+   "What book is this the opening paragraph of?"
 )
 
 # Short input used for every decode-dominated generation request.
-DECODE_PROMPT = "Write a detailed explanation of how language-model inference works."
+DECODE_PROMPT = "Summarize the story of the hobbit in one sentence."
 
 # Checkpoint IDs and readable labels used when running and plotting the models.
 MODELS = [
