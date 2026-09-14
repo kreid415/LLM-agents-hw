@@ -1,0 +1,4 @@
+.cuda_compat_conda/*
+.model_cache/*
+*.pyc
+results/*
