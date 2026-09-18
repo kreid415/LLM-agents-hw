@@ -508,38 +508,6 @@ def train_model(
     training_time_seconds = time.perf_counter() - training_start
     return history, training_time_seconds
 
-
-# Extract fixed held-out prompts and reference replies for qualitative comparison.
-def select_qualitative_examples(dataset: Any, count: int) -> list[dict[str, str]]:
-    # Prompt/reference pairs selected from held-out multi-turn conversations.
-    examples: list[dict[str, str]] = []
-    for conversation in dataset:
-        # Messages in the current held-out UltraChat conversation.
-        messages = conversation["messages"]
-        for message_index, message in enumerate(messages):
-            if message["role"] != "user":
-                continue
-
-            # First assistant reply following this user message, when available.
-            reference = ""
-            for later_message in messages[message_index + 1 :]:
-                if later_message["role"] == "assistant":
-                    reference = later_message["content"]
-                    break
-            examples.append(
-                {
-                    "prompt": message["content"],
-                    "held_out_reference": reference,
-                }
-            )
-            break
-        if len(examples) >= count:
-            break
-    if len(examples) < count:
-        raise SystemExit("The held-out subset did not contain enough user prompts.")
-    return examples
-
-
 # Generate deterministic assistant replies for the shared held-out prompts.
 def generate_replies(
     model: Any,
@@ -748,9 +716,41 @@ def main() -> None:
     loader_seed = SEED + 2
 
     # Held-out prompt/reference pairs used for every qualitative generation pass.
-    qualitative_examples = select_qualitative_examples(
-        eval_dataset, min(NUM_QUALITATIVE_PROMPTS, args.eval_examples)
-    )
+    qualitative_examples = [
+        {
+            "prompt": "Write a haiku about a boy and a dog.",
+            "held_out_reference": (
+                "Boy and dog race home\n"
+                "Through fields of gold and sunlight\n"
+                "Best friends forever"
+            ),
+        },
+        {
+            "prompt": (
+                "Provide a one-sentence summary of the main themes of "
+                "The Lord of the Rings: The Two Towers."
+            ),
+            "held_out_reference": (
+                "The Two Towers explores themes of friendship, courage, sacrifice, "
+                "and resistance to corrupting power as its characters struggle to "
+                "preserve hope amid war and division."
+            ),
+        },
+        {
+            "prompt": (
+                "Write a short paragraph describing the dangers of artificial "
+                "superintelligence and the importance of ethical AI development."
+            ),
+            "held_out_reference": (
+                "Artificial superintelligence could cause serious harm if its goals "
+                "conflict with human values or if people lose the ability to understand "
+                "and control its decisions. Ethical AI development should therefore "
+                "prioritize safety, transparency, accountability, and rigorous testing "
+                "so that increasingly capable systems remain beneficial and under "
+                "meaningful human oversight."
+            ),
+        },
+    ]
 
     # JSON-serializable qualitative report initialized with prompts and references.
     qualitative_report = [dict(example, generations={}) for example in qualitative_examples]
